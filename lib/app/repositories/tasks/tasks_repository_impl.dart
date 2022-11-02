@@ -17,9 +17,9 @@ class TasksRepositoryImpl implements TasksRepository {
     final conn = await _sqliteConnectionFactory.openConnection();
     await conn.insert('todo', {
       'id': null,
-      'descricao': description,
+      'description': description,
       'data_hora': date.toIso8601String(),
-      'finalizado': 0,
+      'finished': 0,
     });
   }
 
@@ -36,5 +36,13 @@ class TasksRepositoryImpl implements TasksRepository {
           endFilter.toIso8601String(),
         ]);
     return result.map((e) => TaskModel.loadFromDB(e)).toList();
+  }
+
+  @override
+  Future<void> checkOrUncheckTask(TaskModel task) async {
+    final conn = await _sqliteConnectionFactory.openConnection();
+    final finished = task.finished ? 1 : 0;
+    await conn.rawUpdate(
+        'update todo set finished = ? where id = ?', [finished, task.id]);
   }
 }

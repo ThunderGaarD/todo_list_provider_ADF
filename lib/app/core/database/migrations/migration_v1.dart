@@ -6,10 +6,10 @@ class MigrationV1 implements Migration {
   void create(Batch batch) {
     batch.execute('''
     create table todo(
-      id Integer primary key autoincrement,
-      descricao varchar(500) not null,
+      id integer primary key autoincrement,
+      description varchar(500) not null,
       data_hora datetime,
-      finalizado interger
+      finished interger
     )
 ''');
   }

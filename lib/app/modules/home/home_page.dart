@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:todo_list_provider/app/core/auth/auth_provider.dart';
+import 'package:todo_list_provider/app/core/notifier/default_listener_notifier.dart';
 import 'package:todo_list_provider/app/core/ui/todo_list_icons.dart';
+import 'package:todo_list_provider/app/models/task_filter_enum.dart';
 import 'package:todo_list_provider/app/modules/home/home_controller.dart';
 import 'package:todo_list_provider/app/modules/home/widgets/home_drawer.dart';
 import 'package:todo_list_provider/app/core/ui/theme_extensions.dart';
@@ -27,11 +29,20 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    widget._homeController.loadTotalTask();
+    DefaultListenerNotifier(changeNotifier: widget._homeController).listener(
+        context: context,
+        sucessVoidCallback: (notifier, listenerInstance) {
+          listenerInstance.dispose();
+        });
+
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      widget._homeController.loadTotalTask();
+      widget._homeController.findTasks(filter: TaskFilterEnum.today);
+    });
   }
 
-  void _goToCreateTask(BuildContext context) {
-    Navigator.of(context).push(PageRouteBuilder(
+  Future<void> _goToCreateTask(BuildContext context) async {
+    await Navigator.of(context).push(PageRouteBuilder(
       transitionDuration: Duration(milliseconds: 400),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         animation =
@@ -46,6 +57,7 @@ class _HomePageState extends State<HomePage> {
         return TasksModule().getPage('/task/create', context);
       },
     ));
+    widget._homeController.refreshPage();
   }
 
   @override
@@ -58,8 +70,13 @@ class _HomePageState extends State<HomePage> {
         actions: [
           PopupMenuButton(
             icon: Icon(TodoListIcons.filter),
+            onSelected: ((value) {
+              widget._homeController.showOrHideFinishingTask();
+            }),
             itemBuilder: (_) => [
-              PopupMenuItem<bool>(child: Text('Mostrar tarefas concluidas')),
+              PopupMenuItem<bool>(
+                  value: true, 
+                  child: Text('${widget._homeController.showFinishingTasks ? 'Esconder': 'Mostrar'} tarefas concluidas')),
             ],
           )
         ],

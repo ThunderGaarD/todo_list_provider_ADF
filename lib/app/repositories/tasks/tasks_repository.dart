@@ -6,4 +6,5 @@ abstract class TasksRepository {
     DateTime start,
     DateTime end,
   );
+  Future<void> checkOrUncheckTask(TaskModel task);
 }
